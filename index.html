@@ -357,26 +357,22 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
       </div>
       <h1>chá da</h1>
       <div class="nome">Antonella</div>
-      <div class="sub">a lista de presentes 🐾</div>
-      <div class="event-meta">
-        <div class="meta-chip"><span>📅</span> <span class="tbd">data a definir</span></div>
-        <div class="meta-chip"><span>📍</span> <span class="tbd">local a definir</span></div>
-      </div>
+      <div class="sub">Lista de Presentes 🐾</div>
       <div class="countdowns">
         <div class="cd-card">
           <div class="cd-label">🍼 chegada prevista</div>
-          <div class="cd-digits" id="cd-dpp"></div>
+          <div class="cd-tbd">setembro/26 🍼</div>
         </div>
         <div class="cd-card">
           <div class="cd-label">🎉 dia do chá</div>
-          <div class="cd-tbd">a definir 🐾</div>
+          <div class="cd-digits" id="cd-cha"></div>
         </div>
       </div>
     </div>
   </div>
 
   <div class="intro-card">
-    <p>Cada presentinho ajuda a dar as boas-vindas pra Antonella 🧸 Escolha um ou vários, junte no carrinho e finalize com seu nome.
+    <p>Cada presentinho ajuda a dar as boas-vindas pra Antonella 🧸 Escolha um ou vários, junte no carrinho e finalize com um recado.
     <span class="big">Obrigada por fazer parte! ♥</span></p>
   </div>
 
@@ -385,22 +381,7 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
   <div class="sec-divider"><span class="paw">🐾</span><h2>quem já deu um mimo</h2><span class="paw">🐾</span></div>
   <div class="contrib-strip" id="contrib-strip"></div>
 
-  <div class="sec-divider"><span class="paw">🔮</span><h2>palpites da ursinha</h2><span class="paw">🔮</span></div>
-  <div class="palpite-box">
-    <p class="palpite-intro">Quanto será que ela vai nascer? Deixe seu palpite — depois a gente revela quem acertou! 🎯</p>
-    <div class="palpite-grid">
-      <div class="palpite-field"><label>Seu nome</label><input type="text" id="pal-nome" placeholder="Seu nome"></div>
-      <div class="palpite-field"><label>Peso (kg)</label><input type="text" id="pal-peso" placeholder="ex: 3,4"></div>
-      <div class="palpite-field"><label>Data de nascimento</label><input type="text" id="pal-data" placeholder="ex: 12/10"></div>
-      <div class="palpite-field"><label>Vai parecer com...</label>
-        <select id="pal-parecido"><option value="">escolha</option><option>a mamãe</option><option>o papai</option><option>os dois</option></select>
-      </div>
-    </div>
-    <button class="btn-primary" onclick="addPalpite()">Enviar meu palpite 🐻</button>
-    <div class="palpite-list" id="palpite-list"></div>
-  </div>
-
-  <div class="sec-divider"><span class="paw">💌</span><h2>mural de carinhos</h2><span class="paw">💌</span></div>
+  <div class="sec-divider"><span class="paw">💌</span><h2>mural de recados</h2><span class="paw">💌</span></div>
   <div class="mural-box">
     <div class="mural-form">
       <div class="mural-grid">
@@ -422,7 +403,7 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
     <div id="cart-checkout" style="display:none;">
       <div class="cart-total-row"><span class="lbl">Total</span><span class="val" id="cart-grand-total">R$ 0</span></div>
       <div class="field"><label>Seu nome ✨</label><input type="text" id="guest-name" placeholder="Como você quer aparecer na lista"></div>
-      <div class="field"><label>Mensagem pra Antonella (opcional)</label><textarea id="guest-msg" placeholder="Um recadinho carinhoso..."></textarea><div class="hint">Sua mensagem vai aparecer no mural de carinhos 💕</div></div>
+      <div class="field"><label>Mensagem pra Antonella (opcional)</label><textarea id="guest-msg" placeholder="Um recadinho carinhoso..."></textarea><div class="hint">Sua mensagem vai aparecer no mural de recados 💕</div></div>
       <button class="btn-primary" id="btn-finalizar" onclick="goToPix()">Finalizar e ver o Pix 💖</button>
       <button class="btn-ghost" onclick="showScreen('lista',0)">← Continuar escolhendo</button>
     </div>
@@ -524,8 +505,7 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ====== CONSTANTES ====== */
-// Altere a data de parto prevista aqui (formato: 'YYYY-MM-DD'):
-const DPP = new Date('2026-10-15');
+const CHA_DATE = new Date('2026-07-03T12:00:00');
 
 const CAT_PAW = {
   'Higiene & Banho': '🛁',
@@ -542,7 +522,6 @@ let itemsMap = {};
 let catalogData = [];
 let contrib = [];
 let recados = [];
-let palpites = [];
 let pixCfg = {};
 let adminOrdersCache = [];
 let adminCurrentFilter = 'pendente';
@@ -575,7 +554,6 @@ async function init() {
       loadCatalog(),
       loadContrib(),
       loadRecadosData(),
-      loadPalpitesData(),
       loadPixCfg(),
     ]);
   } catch (e) {
@@ -585,7 +563,6 @@ async function init() {
   renderCatalog();
   updateCart();
   renderContrib();
-  renderPalpites();
   renderRecados();
   renderCountdown();
   setInterval(renderCountdown, 60000);
@@ -595,7 +572,6 @@ async function init() {
   await handleRoute();
 
   setTimeout(() => document.getElementById('loading').classList.add('gone'), 1200);
-  startSocial();
 }
 
 /* ====== DATA LOADING ====== */
@@ -634,11 +610,6 @@ async function loadContrib() {
 async function loadRecadosData() {
   const { data } = await sb.from('recados').select('*').eq('oculto', false).order('criado_em', { ascending: false });
   recados = data || [];
-}
-
-async function loadPalpitesData() {
-  const { data } = await sb.from('palpites').select('*').order('criado_em', { ascending: false });
-  palpites = data || [];
 }
 
 async function loadPixCfg() {
@@ -926,38 +897,6 @@ function renderContrib() {
     <div class="contrib-chip"><span class="av">${initials(n)}</span>${n}</div>`).join('');
 }
 
-/* ====== PALPITES ====== */
-function renderPalpites() {
-  document.getElementById('palpite-list').innerHTML = palpites.map(p => `
-    <div class="palpite-row">
-      <span class="pav">${initials(p.nome)}</span>
-      <span class="pwho">${p.nome}</span>
-      <span class="pguess">${p.peso}kg · ${p.data_palpite} · ${p.parecido_com}</span>
-    </div>`).join('');
-}
-async function addPalpite() {
-  const nome = document.getElementById('pal-nome').value.trim();
-  const peso = document.getElementById('pal-peso').value.trim();
-  const data = document.getElementById('pal-data').value.trim();
-  const parecido = document.getElementById('pal-parecido').value;
-  if (!nome || !peso || !data) { toast('Preencha nome, peso e data 🐾'); return; }
-
-  const { error } = await sb.from('palpites').insert({
-    nome, peso, data_palpite: data, parecido_com: parecido || 'surpresa',
-  });
-  if (error) { toast('Erro ao enviar palpite 😢'); return; }
-
-  document.getElementById('pal-nome').value = '';
-  document.getElementById('pal-peso').value = '';
-  document.getElementById('pal-data').value = '';
-  document.getElementById('pal-parecido').value = '';
-
-  await loadPalpitesData();
-  renderPalpites();
-  toast('Palpite registrado! 🎯');
-  confettiBurst();
-}
-
 /* ====== MURAL ====== */
 function renderRecados() {
   const el = document.getElementById('recados-list');
@@ -1138,11 +1077,11 @@ async function handleRoute() {
 
 /* ====== COUNTDOWN ====== */
 function renderCountdown() {
-  const now = new Date(), diff = DPP - now;
+  const now = new Date(), diff = CHA_DATE - now;
   const d = Math.max(0, Math.floor(diff / 864e5));
   const h = Math.max(0, Math.floor(diff % 864e5 / 36e5));
   const m = Math.max(0, Math.floor(diff % 36e5 / 6e4));
-  document.getElementById('cd-dpp').innerHTML =
+  document.getElementById('cd-cha').innerHTML =
     `<div class="cd-unit"><span class="cd-num">${d}</span><small>dias</small></div>
      <div class="cd-unit"><span class="cd-num">${h}</span><small>horas</small></div>
      <div class="cd-unit"><span class="cd-num">${m}</span><small>min</small></div>`;
@@ -1180,26 +1119,6 @@ function toast(msg) {
   const t = document.getElementById('toast');
   t.classList.remove('social'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1900);
-}
-
-/* ====== SOCIAL TOASTS (simulados) ====== */
-const SOCIAL = [
-  'Tia Bel acabou de dar uma cota! 🎉',
-  'Vó Lena deixou um carinho no mural 💌',
-  'Tio Rafa completou uma cota! 🐻',
-  'Prima Duda enviou um palpite 🎯',
-];
-let socialTimer;
-function startSocial() {
-  clearInterval(socialTimer);
-  socialTimer = setInterval(() => {
-    if (document.getElementById('screen-lista').classList.contains('active') && !document.hidden) {
-      const t = document.getElementById('toast');
-      t.textContent = SOCIAL[Math.floor(Math.random() * SOCIAL.length)];
-      t.classList.add('show', 'social');
-      clearTimeout(window._st); window._st = setTimeout(() => t.classList.remove('show', 'social'), 2600);
-    }
-  }, 14000);
 }
 
 window.addEventListener('load', init);
