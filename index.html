@@ -13,7 +13,7 @@
 :root{
   --rosa-nuvem:#F9E0E4;--rosa-fundo:#FDEEF1;--pink:#E8579A;--pink-escuro:#D13D85;
   --rosa-balao:#F4A6C0;--caramelo:#D49A6A;--caramelo-claro:#E8C19E;--marrom-focinho:#8B6F47;
-  --creme:#FBF6F2;--lavanda:#D9CBEC;--lavanda-escuro:#9B7DC4;--dourado:#E8B86D;
+  --creme:#FBF6F2;--lavanda:#D9CBEC;--lavanda-escuro:#8870a8;--dourado:#E8B86D;
   --texto:#6B4A52;--texto-claro:#A08891;--branco:#FFFFFF;
   --sombra:rgba(209,61,133,0.10);--sombra-forte:rgba(209,61,133,0.18);
   --ok:#5BB98C;--aviso:#E8A23D;
@@ -56,8 +56,9 @@ body{font-family:var(--corpo);background:var(--rosa-fundo);color:var(--texto);li
 /* ===== HERO ===== */
 .hero{position:relative;margin:0 -16px 8px;padding:24px 24px 0;background:radial-gradient(120% 80% at 50% 0%, var(--rosa-nuvem) 0%, var(--rosa-fundo) 70%);border-bottom-left-radius:36px;border-bottom-right-radius:36px;text-align:center;overflow:hidden;}
 .hero-inner{position:relative;padding-bottom:22px;max-width:720px;margin:0 auto;}
-.eyebrow{font-family:var(--script);font-size:26px;color:var(--pink);font-weight:700;line-height:1;transform:rotate(-3deg);display:inline-block;}
-.bear-scene{position:relative;height:170px;margin:4px 0 0;display:flex;align-items:flex-end;justify-content:center;cursor:pointer;}
+.eyebrow{font-family:var(--script);font-size:26px;color:var(--pink);font-weight:700;line-height:1.15;transform:rotate(-3deg);display:inline-block;position:relative;z-index:5;margin-bottom:14px;max-width:280px;}
+.card .thumb img{width:100%;height:100%;object-fit:cover;border-radius:16px;display:block;}
+.bear-scene{position:relative;height:170px;margin:14px 0 0;display:flex;align-items:flex-end;justify-content:center;cursor:pointer;z-index:1;}
 .balloon{position:absolute;width:46px;height:56px;border-radius:50% 50% 48% 48%;top:0;box-shadow:inset -6px -8px 12px rgba(0,0,0,0.06);}
 .balloon::after{content:'';position:absolute;bottom:-5px;left:50%;transform:translateX(-50%);border-left:5px solid transparent;border-right:5px solid transparent;border-top:7px solid currentColor;opacity:0.8;}
 .balloon .heart{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,0.7);font-size:14px;}
@@ -92,15 +93,6 @@ body{font-family:var(--corpo);background:var(--rosa-fundo);color:var(--texto);li
 .meta-chip .tbd{color:var(--texto-claro);font-weight:600;}
 
 /* ===== COUNTDOWN DUPLO ===== */
-.countdowns{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px auto 0;max-width:720px;}
-@media(max-width:520px){.countdowns{gap:9px;}}
-.cd-card{background:var(--branco);border:1.5px solid var(--rosa-nuvem);border-radius:18px;padding:14px 12px;text-align:center;box-shadow:0 4px 12px var(--sombra);}
-.cd-card .cd-label{font-size:11px;font-weight:800;color:var(--texto-claro);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;display:flex;align-items:center;justify-content:center;gap:5px;}
-.cd-digits{display:flex;justify-content:center;gap:6px;}
-.cd-unit{display:flex;flex-direction:column;align-items:center;}
-.cd-num{font-family:var(--display);font-weight:800;font-size:24px;color:var(--pink);line-height:1;background:var(--rosa-fundo);border-radius:9px;padding:5px 7px;min-width:34px;}
-.cd-unit small{font-size:9px;color:var(--texto-claro);font-weight:700;margin-top:3px;text-transform:uppercase;}
-.cd-tbd{font-family:var(--script);font-size:20px;color:var(--rosa-balao);padding:10px 0;}
 
 /* ===== SEÇÕES ===== */
 .intro-card{background:var(--branco);border-radius:24px;padding:20px 22px;box-shadow:0 6px 20px var(--sombra);text-align:center;margin:22px auto;border:1.5px solid var(--rosa-nuvem);max-width:720px;}
@@ -116,7 +108,6 @@ body{font-family:var(--corpo);background:var(--rosa-fundo);color:var(--texto);li
 .cat-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-left:4px;}
 .cat-head .paw{font-size:18px;}
 .cat-head h3{font-family:var(--display);font-weight:700;font-size:20px;color:var(--texto);}
-.cat-head .count{margin-left:auto;font-size:11.5px;font-weight:700;color:var(--texto-claro);background:var(--branco);padding:3px 10px;border-radius:999px;border:1.5px solid var(--rosa-nuvem);}
 
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:14px;}
 @media(max-width:440px){.grid{grid-template-columns:1fr 1fr;gap:11px;}}
@@ -126,10 +117,6 @@ body{font-family:var(--corpo);background:var(--rosa-fundo);color:var(--texto);li
 .card .ears{position:absolute;top:-9px;left:0;right:0;display:flex;justify-content:space-between;padding:0 22px;pointer-events:none;}
 .card .ears span{width:22px;height:22px;background:var(--caramelo-claro);border-radius:50%;border:1.5px solid var(--rosa-nuvem);}
 .card .ears span::after{content:'';display:block;margin:6px auto;width:8px;height:8px;background:var(--rosa-balao);border-radius:50%;}
-.tag-ess{position:absolute;top:9px;left:9px;z-index:4;font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:0.04em;}
-.tag-essencial{background:#E6F6EE;color:var(--ok);}
-.tag-desejo{background:#FCE4EF;color:var(--pink);}
-.tag-luxo{background:#F3EFFA;color:var(--lavanda-escuro);}
 .card .thumb{height:96px;border-radius:16px;margin-bottom:11px;display:flex;align-items:center;justify-content:center;font-size:42px;background:linear-gradient(135deg,var(--rosa-nuvem),var(--creme));}
 .card h4{font-family:var(--display);font-weight:600;font-size:15px;color:var(--texto);line-height:1.15;margin-bottom:4px;}
 .card .price{font-size:15px;font-weight:800;color:var(--pink);margin-bottom:10px;}
@@ -259,6 +246,9 @@ body{font-family:var(--corpo);background:var(--rosa-fundo);color:var(--texto);li
 .admin-filter button.active{background:var(--pink);color:#fff;border-color:var(--pink);}
 .order{background:var(--branco);border-radius:18px;padding:15px 16px;margin-bottom:12px;box-shadow:0 4px 12px var(--sombra);border:1.5px solid var(--rosa-nuvem);}
 .order.confirmed{opacity:0.62;}
+.order.priority{border-color:var(--ok);box-shadow:0 4px 16px rgba(91,185,140,0.25);}
+.pagou-flag{background:#E6F6EE;color:var(--ok);font-size:11.5px;font-weight:800;padding:7px 11px;border-radius:10px;margin-bottom:10px;}
+.aguardando-flag{background:var(--rosa-fundo);color:var(--texto-claro);font-size:11.5px;font-weight:700;padding:7px 11px;border-radius:10px;margin-bottom:10px;}
 .order-top{display:flex;align-items:center;gap:10px;margin-bottom:11px;}
 .order-avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--rosa-balao),var(--pink));color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;flex-shrink:0;}
 .order-who{flex:1;min-width:0;}
@@ -358,22 +348,14 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
       <h1>chá da</h1>
       <div class="nome">Antonella</div>
       <div class="sub">Lista de Presentes 🐾</div>
-      <div class="countdowns">
-        <div class="cd-card">
-          <div class="cd-label">🍼 chegada prevista</div>
-          <div class="cd-tbd">setembro/26 🍼</div>
-        </div>
-        <div class="cd-card">
-          <div class="cd-label">🎉 dia do chá</div>
-          <div class="cd-digits" id="cd-cha"></div>
-        </div>
+      <div class="event-meta" style="margin-top:18px;">
+        <div class="meta-chip"><span>🎉</span> dia do chá: <span class="tbd">a definir</span></div>
       </div>
     </div>
   </div>
 
   <div class="intro-card">
-    <p>Cada presentinho ajuda a dar as boas-vindas pra Antonella 🧸 Escolha um ou vários, junte no carrinho e finalize com um recado.
-    <span class="big">Obrigada por fazer parte! ♥</span></p>
+    <p>Cada presentinho ajuda a dar as boas-vindas pra Antonella! 🧸<br>Escolha um ou mais, e finalize com um recado carinhoso.</p>
   </div>
 
   <div id="catalog"></div>
@@ -405,7 +387,7 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
       <div class="field"><label>Seu nome ✨</label><input type="text" id="guest-name" placeholder="Como você quer aparecer na lista"></div>
       <div class="field"><label>Mensagem pra Antonella (opcional)</label><textarea id="guest-msg" placeholder="Um recadinho carinhoso..."></textarea><div class="hint">Sua mensagem vai aparecer no mural de recados 💕</div></div>
       <button class="btn-primary" id="btn-finalizar" onclick="goToPix()">Finalizar e ver o Pix 💖</button>
-      <button class="btn-ghost" onclick="showScreen('lista',0)">← Continuar escolhendo</button>
+      <button class="btn-ghost" onclick="navTo('lista')">← Continuar escolhendo</button>
     </div>
   </div>
 </div>
@@ -414,13 +396,22 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
 <div class="screen" id="screen-pix">
   <div class="pix-card">
     <div class="pix-check">🎀</div>
-    <h2>Quase lá, <span id="pix-name">amiga</span>!</h2>
-    <p class="pix-desc">Faça o Pix no valor exato abaixo pra confirmar seu presente. Assim que cair, a gente marca como recebido 🐻</p>
+    <h2>Quase lá, <span id="pix-name">amiga</span>! 🎀</h2>
+    <p class="pix-desc">Seu presente fica reservado assim que você faz o Pix, favor confirmar o pagamento abaixo.</p>
     <div class="pix-amount"><div class="lbl">Valor do seu Pix</div><div class="val" id="pix-value">R$ 0</div></div>
     <div class="qr-box" id="qr-box"></div>
     <div class="pix-copy"><code id="pix-code"></code><button onclick="copyPix()">Copiar</button></div>
-    <div class="pix-note"><span class="ico">💡</span><span>Seu presente fica <b>reservado</b> assim que você faz o Pix. A organizadora confirma o recebimento e ele aparece como concluído na lista. Pode levar alguns minutinhos 💕</span></div>
-    <button class="btn-ghost" style="margin-top:18px;" onclick="resetAfterPix()">Voltar pra lista 🐾</button>
+    <button class="btn-primary" id="btn-confirmei" style="margin-top:18px;" onclick="confirmeiPix()">Já fiz o Pix ✓</button>
+    <button class="btn-ghost" style="margin-top:10px;" onclick="resetAfterPix()">Voltar pra lista 🐾</button>
+  </div>
+</div>
+
+<!-- ============ AGRADECIMENTO ============ -->
+<div class="screen" id="screen-obrigado">
+  <div class="pix-card" style="text-align:center;">
+    <div style="font-size:60px;margin-bottom:6px;">🐻💕</div>
+    <h2 style="margin-bottom:18px;">Obrigada por participar deste momento!</h2>
+    <button class="btn-primary" onclick="resetAfterPix()">Voltar pra lista 🐾</button>
   </div>
 </div>
 
@@ -480,20 +471,20 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
     <div class="e404-bear">🧸💤</div>
     <h2>Ops!</h2>
     <p>Esse caminho ainda não nasceu 🐻<br>Vamos voltar pra lista da Antonella?</p>
-    <button class="btn-primary" style="max-width:280px;margin:0 auto" onclick="showScreen('lista',0)">🐾 Voltar pra lista</button>
+    <button class="btn-primary" style="max-width:280px;margin:0 auto" onclick="navTo('lista')">🐾 Voltar pra lista</button>
   </div>
 </div>
 
 </div><!-- /wrap -->
 
-<button class="cart-fab hidden" id="cart-fab" onclick="showScreen('carrinho',0)">
+<button class="cart-fab hidden" id="cart-fab" onclick="navTo('carrinho')">
   <span class="cart-count" id="fab-count">0</span><span>Ver carrinho</span><span class="cart-total" id="fab-total">R$ 0</span>
 </button>
 
 <footer>
   <div class="paws">🐾 🐾 🐾</div>
   Chá da Antonella · feito com carinho<br>
-  <span class="secret" onclick="showScreen('admin',0)" style="margin-top:8px;display:inline-block;">🔑 área da organizadora</span>
+  <span class="secret" onclick="navTo('admin')" style="margin-top:8px;display:inline-block;">🔑 área da organizadora</span>
 </footer>
 
 <div class="toast" id="toast"></div>
@@ -505,16 +496,14 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 /* ====== CONSTANTES ====== */
-const CHA_DATE = new Date('2026-07-03T12:00:00');
-
 const CAT_PAW = {
-  'Higiene & Banho': '🛁',
-  'Hora de Dormir':  '🌙',
-  'Roupinhas':       '👶',
-  'Passeio':         '🚼',
-  'Cotas Especiais': '⭐',
+  'Higiene e fraldas':  '🧴',
+  'Alimentação':        '🍼',
+  'Roupinhas':          '👶',
+  'Quarto':             '🛏️',
+  'Presentes maiores':  '🚗',
+  'Teste':              '🧪',
 };
-const TAG_LABEL = { essencial: 'essencial', desejo: 'desejo', luxo: 'luxo' };
 
 /* ====== ESTADO ====== */
 let cart = [];
@@ -526,6 +515,7 @@ let pixCfg = {};
 let adminOrdersCache = [];
 let adminCurrentFilter = 'pendente';
 let isSubmitting = false;
+let currentPedidoId = null;
 
 /* ====== UTILIDADES ====== */
 function fmt(v) {
@@ -564,8 +554,6 @@ async function init() {
   updateCart();
   renderContrib();
   renderRecados();
-  renderCountdown();
-  setInterval(renderCountdown, 60000);
   setInterval(silentRefreshCatalog, 30000);
 
   setupRealtime();
@@ -656,7 +644,9 @@ function setupRealtime() {
 function renderCatalog() {
   document.getElementById('catalog').innerHTML = catalogData.map(cat => {
     const cards = cat.itens.map(item => {
-      const tag = item.tag ? `<span class="tag-ess tag-${item.tag}">${TAG_LABEL[item.tag]}</span>` : '';
+      const thumb = item.imagem_url
+        ? `<img src="${item.imagem_url}" alt="${item.nome}">`
+        : item.emoji;
       if (item.is_cota) {
         const total = item.cotas_total || 1;
         const feitas = item.cotasFeitas || 0;
@@ -674,8 +664,8 @@ function renderCatalog() {
         }
         const urg = (!done && faltam <= 4) ? `<div class="cota-urgency">🔥 faltam só ${faltam} cota${faltam > 1 ? 's' : ''}!</div>` : '';
         return `<div class="card cota">
-          <div class="ears"><span></span><span></span></div>${tag}
-          <div class="thumb">${item.emoji}${done ? '<span class="badge-done">Completo! 🎉</span>' : ''}</div>
+          <div class="ears"><span></span><span></span></div>
+          <div class="thumb">${thumb}${done ? '<span class="badge-done">Completo! 🎉</span>' : ''}</div>
           <h4>${item.nome}</h4>
           <div class="cota-quota-label">Cotas de ${fmt(item.cota_valor)}</div>
           <div class="cota-progress">
@@ -689,15 +679,15 @@ function renderCatalog() {
           ? stepperHTML(item.id, ic.qtd, 9, false)
           : `<button class="btn-add" onclick="addItem(${item.id})">🐾 Presentear</button>`;
         return `<div class="card">
-          <div class="ears"><span></span><span></span></div>${tag}
-          <div class="thumb">${item.emoji}</div>
+          <div class="ears"><span></span><span></span></div>
+          <div class="thumb">${thumb}</div>
           <h4>${item.nome}</h4>
           <div class="price">${fmt(item.preco)}</div>${action}
         </div>`;
       }
     }).join('');
     return `<div class="cat-block">
-      <div class="cat-head"><span class="paw">${cat.paw}</span><h3>${cat.nome}</h3><span class="count">${cat.itens.length}</span></div>
+      <div class="cat-head"><span class="paw">${cat.paw}</span><h3>${cat.nome}</h3></div>
       <div class="grid">${cards}</div>
     </div>`;
   }).join('');
@@ -751,7 +741,7 @@ function renderCartList() {
   const list = document.getElementById('cart-list');
   const checkout = document.getElementById('cart-checkout');
   if (cart.length === 0) {
-    list.innerHTML = `<div class="cart-empty"><span class="big-emoji">🧸</span><p>Seu carrinho está vazinho!<br>Volte pra lista e escolha um presentinho.</p><button class="btn-primary" onclick="showScreen('lista',0)" style="max-width:240px;margin:0 auto;">Ver a lista 🐾</button></div>`;
+    list.innerHTML = `<div class="cart-empty"><span class="big-emoji">🧸</span><p>Seu carrinho está vazinho!<br>Volte pra lista e escolha um presentinho.</p><button class="btn-primary" onclick="navTo('lista')" style="max-width:240px;margin:0 auto;">Ver a lista 🐾</button></div>`;
     checkout.style.display = 'none';
     return;
   }
@@ -819,6 +809,9 @@ async function goToPix() {
   document.getElementById('pix-name').textContent = name.split(' ')[0];
   document.getElementById('pix-value').textContent = fmt(total);
   document.getElementById('pix-code').textContent = payload;
+  currentPedidoId = pedidoId;
+  const btnConf = document.getElementById('btn-confirmei');
+  if (btnConf) { btnConf.disabled = false; btnConf.innerHTML = 'Já fiz o Pix ✓'; }
 
   const qrBox = document.getElementById('qr-box');
   qrBox.innerHTML = '';
@@ -830,20 +823,42 @@ async function goToPix() {
   btn.innerHTML = 'Finalizar e ver o Pix 💖';
   isSubmitting = false;
 
-  showScreen('pix', 0);
+  navTo('pix');
+  await silentRefreshCatalog();
+}
+
+async function confirmeiPix() {
+  const btn = document.getElementById('btn-confirmei');
+  if (currentPedidoId) {
+    btn.disabled = true;
+    btn.innerHTML = 'Confirmando... 🐻';
+    const { error } = await sb.rpc('confirmar_pagamento_convidado', { p_pedido_id: currentPedidoId });
+    if (error) {
+      toast('😢 ' + (error.message || 'Não consegui registrar. Tente de novo.'));
+      btn.disabled = false;
+      btn.innerHTML = 'Já fiz o Pix ✓';
+      return;
+    }
+  }
+  currentPedidoId = null;
+  cart = [];
+  const gn = document.getElementById('guest-name'); if (gn) gn.value = '';
+  const gm = document.getElementById('guest-msg'); if (gm) gm.value = '';
+  renderCatalog(); updateCart();
+  navTo('obrigado');
+  confettiBurst();
   await silentRefreshCatalog();
 }
 
 function resetAfterPix() {
   cart = [];
-  document.getElementById('guest-name').value = '';
-  document.getElementById('guest-msg').value = '';
-  renderCatalog();
-  updateCart();
-  showScreen('lista', 0);
-  toast('Obrigada pelo carinho! 🐻💕');
-  confettiBurst();
+  currentPedidoId = null;
+  const gn = document.getElementById('guest-name'); if (gn) gn.value = '';
+  const gm = document.getElementById('guest-msg'); if (gm) gm.value = '';
+  renderCatalog(); updateCart();
+  navTo('lista');
 }
+
 function copyPix() {
   const code = document.getElementById('pix-code').textContent;
   if (navigator.clipboard) {
@@ -951,7 +966,7 @@ function showAdminPanel() {
 }
 async function loadAdminData() {
   const [{ data: pedidos }, { data: allRecados }, { data: allPalpites }] = await Promise.all([
-    sb.from('pedidos').select(`id,nome_convidado,mensagem,valor_total,status,criado_em,pedido_itens(quantidade,valor_unitario,eh_cota,itens(nome,emoji))`).order('criado_em', { ascending: false }),
+    sb.from('pedidos').select(`id,nome_convidado,mensagem,valor_total,status,pago_pelo_convidado,criado_em,pedido_itens(quantidade,valor_unitario,eh_cota,itens(nome,emoji))`).order('criado_em', { ascending: false }),
     sb.from('recados').select('*').order('criado_em', { ascending: false }),
     sb.from('palpites').select('*').order('criado_em', { ascending: false }),
   ]);
@@ -979,12 +994,17 @@ function renderOrders() {
       return `<div class="oi"><span>${n}</span><span>${fmt(pi.valor_unitario * pi.quantidade)}</span></div>`;
     }).join('');
     const isPend = o.status === 'pendente';
-    return `<div class="order ${o.status === 'confirmado' ? 'confirmed' : ''}">
+    const jaPagou = o.pago_pelo_convidado === true;
+    const flag = (isPend && jaPagou)
+      ? `<div class="pagou-flag">💸 convidado marcou que já pagou — conferir Pix</div>`
+      : (isPend ? `<div class="aguardando-flag">⏳ aguardando o convidado pagar</div>` : '');
+    return `<div class="order ${o.status === 'confirmado' ? 'confirmed' : ''} ${(isPend && jaPagou) ? 'priority' : ''}">
       <div class="order-top">
         <div class="order-avatar">${initials(o.nome_convidado)}</div>
         <div class="order-who"><h4>${o.nome_convidado}</h4><div class="when">${formatDate(o.criado_em)}</div></div>
         <div style="text-align:right"><div class="order-amount">${fmt(o.valor_total)}</div><span class="priv-tag">só você vê 👁</span></div>
       </div>
+      ${flag}
       <div class="order-items">${itensHtml}</div>
       ${o.mensagem ? `<div class="order-msg">💬 "${o.mensagem}"</div>` : ''}
       ${isPend
@@ -1050,41 +1070,52 @@ function adminTab(name, btn) {
   document.getElementById('pane-' + name).classList.add('active');
 }
 
-/* ====== ROUTING ====== */
+/* ====== ROUTING (nativo: pushState + popstate) ====== */
+const VALID_SCREENS = ['lista', 'carrinho', 'pix', 'obrigado', 'admin', 'e404'];
+const HASH_MAP = { lista: '', carrinho: 'carrinho', pix: 'pix', obrigado: 'obrigado', admin: 'admin', e404: 'e404' };
+
+// Render puro de uma tela (sem mexer no histórico)
 function showScreen(name, scroll = 1) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById('screen-' + name).classList.add('active');
+  const el = document.getElementById('screen-' + name);
+  if (el) el.classList.add('active');
   updateCart();
-  if (scroll) window.scrollTo({ top: 0, behavior: 'smooth' });
-  const hashMap = { lista: '', carrinho: 'carrinho', pix: 'pix', admin: 'admin', e404: 'e404' };
-  const h = hashMap[name];
-  if (h !== undefined) history.replaceState(null, '', h ? '#' + h : location.pathname + location.search);
+  if (scroll) window.scrollTo(0, 0);
 }
-async function handleRoute() {
-  const hash = location.hash.replace('#', '') || 'lista';
-  const valid = ['lista', 'carrinho', 'pix', 'admin', 'e404'];
-  const screen = valid.includes(hash) ? hash : 'e404';
 
+// Navega para uma tela EMPILHANDO no histórico (cria ponto de "voltar")
+function navTo(name) {
+  const h = HASH_MAP[name];
+  const url = h ? '#' + h : location.pathname + location.search;
+  history.pushState({ screen: name }, '', url);
+  showScreen(name);
+}
+
+// Responde ao voltar/avançar do navegador, gesto de swipe e botão do Android
+window.addEventListener('popstate', async (e) => {
+  const name = (e.state && e.state.screen) || screenFromHash();
+  if (name === 'admin') {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) { showAdminPanel(); await loadAdminData(); }
+  }
+  showScreen(name, 0);
+});
+
+function screenFromHash() {
+  const hash = location.hash.replace('#', '') || 'lista';
+  return VALID_SCREENS.includes(hash) ? hash : 'e404';
+}
+
+// Primeira carga: resolve a tela inicial a partir da URL
+async function handleRoute() {
+  const screen = screenFromHash();
   if (screen === 'admin') {
     const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      showAdminPanel();
-      await loadAdminData();
-    }
+    if (session) { showAdminPanel(); await loadAdminData(); }
   }
+  // substitui o estado inicial (não empilha) pra o primeiro "voltar" sair limpo
+  history.replaceState({ screen }, '', location.hash || location.pathname + location.search);
   showScreen(screen, 0);
-}
-
-/* ====== COUNTDOWN ====== */
-function renderCountdown() {
-  const now = new Date(), diff = CHA_DATE - now;
-  const d = Math.max(0, Math.floor(diff / 864e5));
-  const h = Math.max(0, Math.floor(diff % 864e5 / 36e5));
-  const m = Math.max(0, Math.floor(diff % 36e5 / 6e4));
-  document.getElementById('cd-cha').innerHTML =
-    `<div class="cd-unit"><span class="cd-num">${d}</span><small>dias</small></div>
-     <div class="cd-unit"><span class="cd-num">${h}</span><small>horas</small></div>
-     <div class="cd-unit"><span class="cd-num">${m}</span><small>min</small></div>`;
 }
 
 /* ====== CONFETE ====== */
@@ -1109,8 +1140,6 @@ function confettiBurst(x, y) {
 function bearEasterEgg(e) {
   const r = e.currentTarget.getBoundingClientRect();
   confettiBurst(r.left + r.width / 2, r.top + r.height / 2);
-  const msgs = ['ursinho feliz! 🐻','você achou o carinho secreto! 💕','grrr de alegria! 🎀','Antonella manda um abraço! 🤗'];
-  toast(msgs[Math.floor(Math.random() * msgs.length)]);
 }
 
 /* ====== TOAST ====== */
@@ -1122,7 +1151,6 @@ function toast(msg) {
 }
 
 window.addEventListener('load', init);
-window.addEventListener('hashchange', handleRoute);
 </script>
 </body>
 </html>
