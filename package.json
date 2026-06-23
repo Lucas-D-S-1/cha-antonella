@@ -1,0 +1,10 @@
+{
+  "name": "cha-antonella-tests",
+  "private": true,
+  "scripts": {
+    "test": "npx playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.61.0"
+  }
+}

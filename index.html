@@ -161,18 +161,6 @@ body{font-family:var(--corpo);background:var(--rosa-fundo);color:var(--texto);li
 .palpite-row .pwho{font-weight:700;color:var(--texto);flex-shrink:0;}
 .palpite-row .pguess{color:var(--texto-claro);font-size:12px;margin-left:auto;text-align:right;}
 
-/* ===== MURAL ===== */
-.mural-box{max-width:720px;margin:0 auto;}
-.mural-form{background:var(--branco);border-radius:20px;padding:18px;box-shadow:0 6px 18px var(--sombra);border:1.5px solid var(--rosa-nuvem);margin-bottom:18px;}
-.mural-grid{display:grid;grid-template-columns:1fr;gap:10px;}
-.recados-list{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-@media(max-width:560px){.recados-list{grid-template-columns:1fr;}}
-.recado{background:var(--branco);border-radius:18px;padding:15px 16px;box-shadow:0 4px 12px var(--sombra);border:1.5px solid var(--rosa-nuvem);position:relative;}
-.recado .rtop{display:flex;align-items:center;gap:9px;margin-bottom:8px;}
-.recado .rav{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--caramelo-claro),var(--caramelo));color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;}
-.recado .rwho{font-family:var(--display);font-weight:600;font-size:14px;color:var(--texto);}
-.recado .rmsg{font-size:13.5px;color:var(--texto);line-height:1.5;}
-.recado .rheart{position:absolute;top:13px;right:14px;color:var(--rosa-balao);font-size:14px;}
 
 /* ===== CARRINHO ===== */
 .section-title{font-family:var(--display);font-weight:700;font-size:24px;color:var(--texto);text-align:center;margin-bottom:4px;}
@@ -361,16 +349,6 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
 
   <div id="catalog"></div>
 
-  <div class="sec-divider"><span class="paw">💌</span><h2>mural de carinhos</h2><span class="paw">💌</span></div>
-  <div class="mural-box">
-    <div class="mural-form">
-      <div class="mural-grid">
-        <div class="field" style="margin-bottom:0"><label>Seu nome</label><input type="text" id="mural-nome" placeholder="Seu nome"></div>
-        <div class="field" style="margin-bottom:0"><label>Seu recadinho pra Antonella 💕</label><textarea id="mural-msg" placeholder="Deixe um carinho, mesmo sem presente..."></textarea></div>
-      </div>
-      <button class="btn-primary" style="margin-top:13px" onclick="addRecado()">Deixar um carinho 💌</button>
-    </div>
-  </div>
 </div>
 
 <!-- ============ CARRINHO ============ -->
@@ -382,7 +360,7 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
     <div id="cart-checkout" style="display:none;">
       <div class="cart-total-row"><span class="lbl">Total</span><span class="val" id="cart-grand-total">R$ 0</span></div>
       <div class="field"><label>Seu nome ✨</label><input type="text" id="guest-name" placeholder="Como você quer aparecer na lista"></div>
-      <div class="field"><label>Mensagem pra Antonella (opcional)</label><textarea id="guest-msg" placeholder="Um recadinho carinhoso..."></textarea><div class="hint">Sua mensagem vai aparecer no mural de recados 💕</div></div>
+      <div class="field"><label>Mensagem pra Antonella (opcional)</label><textarea id="guest-msg" placeholder="Um recadinho carinhoso..."></textarea><div class="hint">Deixe um carinho pra Antonella 💕</div></div>
       <button class="btn-primary" id="btn-finalizar" onclick="goToPix()">Finalizar e ver o Pix 💖</button>
       <button class="btn-ghost" onclick="navTo('lista')">← Continuar escolhendo</button>
     </div>
@@ -451,7 +429,7 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
         <div id="orders-list"></div>
       </div>
       <div class="admin-pane" id="pane-recados">
-        <p class="admin-sub">Recados aparecem no mural na hora. Se algum estiver fora de tom, é só esconder.</p>
+        <p class="admin-sub">Mensagens deixadas pelos convidados no momento do pedido.</p>
         <div id="admin-recados-list"></div>
       </div>
       <div class="admin-pane" id="pane-palpites">
@@ -901,20 +879,6 @@ function crc16(str) {
   return crc.toString(16).toUpperCase().padStart(4, '0');
 }
 
-/* ====== MURAL ====== */
-async function addRecado() {
-  const nome = document.getElementById('mural-nome').value.trim();
-  const msg = document.getElementById('mural-msg').value.trim();
-  if (!nome || !msg) { toast('Escreva seu nome e o recadinho 💌'); return; }
-
-  const { error } = await sb.from('recados').insert({ nome, mensagem: msg, oculto: false });
-  if (error) { toast('Erro ao enviar 😢'); return; }
-
-  document.getElementById('mural-nome').value = '';
-  document.getElementById('mural-msg').value = '';
-  toast('Carinho enviado! 💕');
-  confettiBurst();
-}
 
 /* ====== ADMIN ====== */
 async function tryAdmin() {
@@ -941,14 +905,13 @@ function showAdminPanel() {
   document.getElementById('admin-panel').style.display = 'block';
 }
 async function loadAdminData() {
-  const [{ data: pedidos }, { data: allRecados }, { data: allPalpites }] = await Promise.all([
+  const [{ data: pedidos }, { data: allPalpites }] = await Promise.all([
     sb.from('pedidos').select(`id,nome_convidado,mensagem,valor_total,status,pago_pelo_convidado,criado_em,pedido_itens(quantidade,valor_unitario,eh_cota,itens(nome,emoji))`).order('criado_em', { ascending: false }),
-    sb.from('recados').select('*').order('criado_em', { ascending: false }),
     sb.from('palpites').select('*').order('criado_em', { ascending: false }),
   ]);
   adminOrdersCache = pedidos || [];
   renderOrders();
-  renderAdminRecados(allRecados || []);
+  renderAdminMensagens(adminOrdersCache);
   renderAdminPalpites(allPalpites || []);
 }
 function renderOrders() {
@@ -1018,19 +981,22 @@ async function cancelOrder(id) {
   toast('Pedido cancelado');
   await loadAdminData();
 }
-function renderAdminRecados(list) {
-  document.getElementById('admin-recados-list').innerHTML = list.map(r => `
-    <div class="admin-recado ${r.oculto ? 'hidden-r' : ''}">
-      <span class="arav">${initials(r.nome)}</span>
-      <div class="arinfo"><div class="arwho">${r.nome}</div><div class="armsg">${r.mensagem}</div></div>
-      <button class="arbtn" onclick="toggleRecado('${r.id}',${r.oculto})">${r.oculto ? 'Mostrar' : 'Esconder'}</button>
+function renderAdminMensagens(pedidos) {
+  const comMsg = pedidos.filter(o => o.mensagem && o.mensagem.trim() !== '');
+  const el = document.getElementById('admin-recados-list');
+  if (comMsg.length === 0) {
+    el.innerHTML = `<div class="cart-empty"><span class="big-emoji">💌</span><p>Nenhum convidado deixou mensagem ainda.</p></div>`;
+    return;
+  }
+  const statusLabel = { pendente: '⏳ pendente', confirmado: '✓ confirmado', cancelado: '✗ cancelado' };
+  el.innerHTML = comMsg.map(o => `
+    <div class="admin-recado">
+      <span class="arav">${initials(o.nome_convidado)}</span>
+      <div class="arinfo">
+        <div class="arwho">${o.nome_convidado} <span style="font-size:10px;opacity:0.6;font-weight:600;">${statusLabel[o.status] || ''}</span></div>
+        <div class="armsg">${o.mensagem}</div>
+      </div>
     </div>`).join('');
-}
-async function toggleRecado(id, ocultoAtual) {
-  const { error } = await sb.from('recados').update({ oculto: !ocultoAtual }).eq('id', id);
-  if (error) { toast('Erro 😢'); return; }
-  toast(ocultoAtual ? 'Recado visível' : 'Recado escondido');
-  await loadAdminData();
 }
 function renderAdminPalpites(list) {
   document.getElementById('admin-palpites-list').innerHTML = list.map(p => `
