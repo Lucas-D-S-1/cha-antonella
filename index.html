@@ -118,6 +118,7 @@ body{font-family:var(--corpo);background:var(--rosa-fundo);color:var(--texto);li
 .card .ears span{width:22px;height:22px;background:var(--caramelo-claro);border-radius:50%;border:1.5px solid var(--rosa-nuvem);}
 .card .ears span::after{content:'';display:block;margin:6px auto;width:8px;height:8px;background:var(--rosa-balao);border-radius:50%;}
 .card .thumb{height:96px;border-radius:16px;margin-bottom:11px;display:flex;align-items:center;justify-content:center;font-size:42px;background:linear-gradient(135deg,var(--rosa-nuvem),var(--creme));}
+.card .thumb svg{width:54px;height:54px;}
 .card h4{font-family:var(--display);font-weight:600;font-size:15px;color:var(--texto);line-height:1.15;margin-bottom:4px;}
 .card .price{font-size:15px;font-weight:800;color:var(--pink);margin-bottom:10px;}
 .btn-add{margin-top:auto;font-family:var(--corpo);font-weight:800;font-size:13px;border:none;border-radius:999px;padding:9px;cursor:pointer;background:var(--pink);color:#fff;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:5px;}
@@ -349,7 +350,7 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
       <div class="nome">Antonella</div>
       <div class="sub">Lista de Presentes 🐾</div>
       <div class="event-meta" style="margin-top:18px;">
-        <div class="meta-chip"><span>🎉</span> dia do chá: <span class="tbd">a definir</span></div>
+        <div class="meta-chip"><span>🎉</span> dia do chá: <span>03/07</span></div>
       </div>
     </div>
   </div>
@@ -360,10 +361,7 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
 
   <div id="catalog"></div>
 
-  <div class="sec-divider"><span class="paw">🐾</span><h2>quem já deu um mimo</h2><span class="paw">🐾</span></div>
-  <div class="contrib-strip" id="contrib-strip"></div>
-
-  <div class="sec-divider"><span class="paw">💌</span><h2>mural de recados</h2><span class="paw">💌</span></div>
+  <div class="sec-divider"><span class="paw">💌</span><h2>mural de carinhos</h2><span class="paw">💌</span></div>
   <div class="mural-box">
     <div class="mural-form">
       <div class="mural-grid">
@@ -372,7 +370,6 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
       </div>
       <button class="btn-primary" style="margin-top:13px" onclick="addRecado()">Deixar um carinho 💌</button>
     </div>
-    <div class="recados-list" id="recados-list"></div>
   </div>
 </div>
 
@@ -509,8 +506,6 @@ const CAT_PAW = {
 let cart = [];
 let itemsMap = {};
 let catalogData = [];
-let contrib = [];
-let recados = [];
 let pixCfg = {};
 let adminOrdersCache = [];
 let adminCurrentFilter = 'pendente';
@@ -542,8 +537,6 @@ async function init() {
   try {
     await Promise.all([
       loadCatalog(),
-      loadContrib(),
-      loadRecadosData(),
       loadPixCfg(),
     ]);
   } catch (e) {
@@ -552,11 +545,8 @@ async function init() {
 
   renderCatalog();
   updateCart();
-  renderContrib();
-  renderRecados();
   setInterval(silentRefreshCatalog, 30000);
 
-  setupRealtime();
   await handleRoute();
 
   setTimeout(() => document.getElementById('loading').classList.add('gone'), 1200);
@@ -590,16 +580,6 @@ async function loadCatalog() {
   }));
 }
 
-async function loadContrib() {
-  const { data } = await sb.from('vw_contribuintes').select('nome');
-  contrib = (data || []).map(r => r.nome);
-}
-
-async function loadRecadosData() {
-  const { data } = await sb.from('recados').select('*').eq('oculto', false).order('criado_em', { ascending: false });
-  recados = data || [];
-}
-
 async function loadPixCfg() {
   const { data } = await sb.from('config').select('chave,valor');
   pixCfg = {};
@@ -620,33 +600,53 @@ async function silentRefreshCatalog() {
     });
   });
   renderCatalog();
-
-  const { data: c2 } = await sb.from('vw_contribuintes').select('nome');
-  contrib = (c2 || []).map(r => r.nome);
-  renderContrib();
 }
 
-/* ====== REALTIME ====== */
-function setupRealtime() {
-  sb.channel('recados-live')
-    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'recados' }, async () => {
-      await loadRecadosData();
-      renderRecados();
-    })
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'recados' }, async () => {
-      await loadRecadosData();
-      renderRecados();
-    })
-    .subscribe();
-}
+
+/* ====== ÍCONES SVG ====== */
+const S = (p)=>`<svg viewBox="0 0 64 64" fill="none" stroke="#E8579A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const ICONS = {
+'Fralda RN': S(`<path d="M9 17 H55 V26 C55 41 45 51 32 51 C19 51 9 41 9 26 Z"/><path d="M9 23 C22 27 42 27 55 23"/><path d="M32 51 C32 45 28 40 22 38 M32 51 C32 45 36 40 42 38" stroke="#F4A6C0"/>`),
+'Fralda P': S(`<path d="M11 18 H53 V26 C53 40 44 49 32 49 C20 49 11 40 11 26 Z"/><path d="M11 24 C22 27 42 27 53 24"/><path d="M32 49 C32 44 28 40 23 38 M32 49 C32 44 36 40 41 38" stroke="#F4A6C0"/>`),
+'Fralda M': S(`<path d="M13 19 H51 V26 C51 39 43 47 32 47 C21 47 13 39 13 26 Z"/><path d="M13 25 C22 28 42 28 51 25"/><path d="M32 47 C32 43 28 40 24 38 M32 47 C32 43 36 40 40 38" stroke="#F4A6C0"/>`),
+'Lenço umedecido': S(`<rect x="12" y="20" width="40" height="28" rx="5"/><ellipse cx="32" cy="20" rx="9" ry="4" stroke="#F4A6C0"/><path d="M27 33 H37" stroke="#F4A6C0"/>`),
+'Pomada para assadura': S(`<rect x="22" y="24" width="20" height="26" rx="4"/><path d="M26 24 V18 H38 V24"/><path d="M30 14 H34" stroke="#F4A6C0"/><path d="M26 36 H38" stroke="#F4A6C0"/>`),
+'Sabonete líquido infantil': S(`<rect x="22" y="26" width="20" height="24" rx="4"/><path d="M26 26 V20 H38 V26"/><rect x="28" y="12" width="8" height="8" rx="2"/><path d="M36 16 H44 V22" stroke="#F4A6C0"/>`),
+'Shampoo infantil': S(`<rect x="23" y="22" width="18" height="28" rx="4"/><path d="M28 22 V16 H36 V22"/><path d="M28 13 H36" stroke="#F4A6C0"/><path d="M28 34 H36" stroke="#F4A6C0"/>`),
+'Algodão': S(`<circle cx="32" cy="34" r="15"/><circle cx="22" cy="28" r="7" stroke="#F4A6C0"/><circle cx="42" cy="28" r="7" stroke="#F4A6C0"/><circle cx="32" cy="24" r="8" stroke="#F4A6C0"/>`),
+'Toalha com capuz': S(`<path d="M16 20 C16 20 24 14 32 14 C40 14 48 20 48 20 L44 48 H20 Z"/><path d="M24 20 C24 26 40 26 40 20" stroke="#F4A6C0"/><circle cx="32" cy="30" r="3" stroke="#F4A6C0"/>`),
+'Kit escova + pente': S(`<rect x="14" y="40" width="22" height="8" rx="4"/><path d="M18 40 V34 M23 40 V34 M28 40 V34 M33 40 V34" stroke="#F4A6C0"/><rect x="40" y="16" width="10" height="20" rx="3"/><path d="M40 22 H50 M40 27 H50" stroke="#F4A6C0"/>`),
+'Termômetro': S(`<rect x="29" y="12" width="6" height="30" rx="3"/><circle cx="32" cy="46" r="6"/><path d="M32 42 V30" stroke="#F4A6C0"/>`),
+'Mamadeira': S(`<path d="M24 24 H40 V46 C40 49 38 50 35 50 H29 C26 50 24 49 24 46 Z"/><path d="M26 24 H38 V20 H26 Z" stroke="#F4A6C0"/><path d="M28 20 C28 15 36 15 36 20"/><path d="M27 32 H37 M27 38 H37" stroke="#F4A6C0"/>`),
+'Escova para mamadeira': S(`<path d="M32 12 V36"/><ellipse cx="32" cy="22" rx="8" ry="12" stroke="#F4A6C0"/><rect x="29" y="36" width="6" height="16" rx="3"/>`),
+'Babador': S(`<path d="M32 16 C24 16 20 22 20 30 C20 42 26 48 32 48 C38 48 44 42 44 30 C44 22 40 16 32 16 Z"/><path d="M26 18 C26 14 38 14 38 18" stroke="#F4A6C0"/><circle cx="32" cy="34" r="5" stroke="#F4A6C0"/>`),
+'Prato infantil': S(`<ellipse cx="32" cy="36" rx="22" ry="9"/><ellipse cx="32" cy="33" rx="13" ry="5" stroke="#F4A6C0"/>`),
+'Colher infantil': S(`<ellipse cx="32" cy="20" rx="9" ry="11"/><path d="M32 31 V52" stroke="#F4A6C0"/>`),
+'Body': S(`<path d="M20 16 L26 20 H38 L44 16 L50 24 L42 30 V44 C42 44 38 48 32 48 C26 48 22 44 22 44 V30 L14 24 Z"/><path d="M27 44 C27 40 37 40 37 44" stroke="#F4A6C0"/>`),
+'Macacão': S(`<path d="M22 14 H42 L44 26 H40 V50 H35 V36 H29 V50 H24 V26 H20 Z"/><circle cx="32" cy="20" r="2" stroke="#F4A6C0"/><circle cx="32" cy="27" r="2" stroke="#F4A6C0"/>`),
+'Meias (kit)': S(`<path d="M24 12 V30 C24 30 24 38 18 42 L14 46 C12 48 14 52 18 50 L26 44 C30 41 30 36 30 30 V12 Z"/><path d="M24 16 H30" stroke="#F4A6C0"/><path d="M40 12 V30 C40 36 40 41 44 44" stroke="#F4A6C0"/>`),
+'Casaquinho': S(`<path d="M20 16 L28 18 L32 22 L36 18 L44 16 L50 26 L44 30 V48 H20 V30 L14 26 Z"/><path d="M32 22 V48"/><circle cx="32" cy="30" r="1.5" fill="#F4A6C0" stroke="none"/><circle cx="32" cy="38" r="1.5" fill="#F4A6C0" stroke="none"/>`),
+'Fralda de pano (kit)': S(`<rect x="14" y="16" width="36" height="36" rx="4"/><path d="M14 24 H50 M14 32 H50 M14 40 H50" stroke="#F4A6C0"/><path d="M22 16 V52" stroke="#F4A6C0"/>`),
+'Lençol para berço': S(`<rect x="12" y="22" width="40" height="28" rx="4"/><path d="M12 32 H52" stroke="#F4A6C0"/><path d="M20 22 V16 M44 22 V16"/>`),
+'Cobertor': S(`<rect x="12" y="18" width="40" height="32" rx="5"/><path d="M12 40 H52" stroke="#F4A6C0"/><path d="M16 44 Q20 40 24 44 T32 44 T40 44 T48 44" stroke="#F4A6C0"/>`),
+'Kit higiene': S(`<rect x="14" y="30" width="36" height="20" rx="4"/><path d="M22 30 V22 H30 V30" /><circle cx="40" cy="22" r="6" stroke="#F4A6C0"/><path d="M14 40 H50" stroke="#F4A6C0"/>`),
+'Luz noturna': S(`<path d="M40 14 C30 16 24 24 24 32 C24 42 32 50 42 48 C36 46 32 40 32 32 C32 24 36 18 40 14 Z"/><circle cx="20" cy="18" r="2" stroke="#F4A6C0"/><circle cx="16" cy="28" r="1.5" stroke="#F4A6C0"/>`),
+'Bolsa maternidade': S(`<path d="M16 26 H48 L46 50 H18 Z"/><path d="M24 26 C24 18 40 18 40 26" stroke="#F4A6C0"/><path d="M16 34 H48" stroke="#F4A6C0"/>`),
+'Carrinho': S(`<path d="M14 20 H22 L26 36 H46 L50 24 H26"/><circle cx="28" cy="46" r="4"/><circle cx="44" cy="46" r="4"/><path d="M26 36 L24 44 H46" stroke="#F4A6C0"/>`),
+'Bebê conforto': S(`<path d="M18 24 C18 24 22 16 32 16 C42 16 46 24 46 24 L44 44 H20 Z"/><path d="M20 34 H44" stroke="#F4A6C0"/><path d="M26 44 V50 M38 44 V50"/><path d="M24 24 C24 20 40 20 40 24" stroke="#F4A6C0"/>`),
+'Sling/canguru': S(`<circle cx="32" cy="20" r="6"/><path d="M16 30 C16 30 24 28 32 28 C40 28 48 30 48 30 L44 44 C44 44 38 48 32 48 C26 48 20 44 20 44 Z" stroke="#F4A6C0"/><path d="M16 30 L20 44 M48 30 L44 44"/>`),
+};
+function ICON_FOR(nome){ return ICONS[nome] || null; }
 
 /* ====== CATÁLOGO ====== */
 function renderCatalog() {
   document.getElementById('catalog').innerHTML = catalogData.map(cat => {
     const cards = cat.itens.map(item => {
-      const thumb = item.imagem_url
-        ? `<img src="${item.imagem_url}" alt="${item.nome}">`
-        : item.emoji;
+      const thumb = ICON_FOR(item.nome)
+        ? ICON_FOR(item.nome)
+        : item.imagem_url
+          ? `<img src="${item.imagem_url}" alt="${item.nome}">`
+          : item.emoji;
       if (item.is_cota) {
         const total = item.cotas_total || 1;
         const feitas = item.cotasFeitas || 0;
@@ -901,31 +901,7 @@ function crc16(str) {
   return crc.toString(16).toUpperCase().padStart(4, '0');
 }
 
-/* ====== CONTRIBUINTES ====== */
-function renderContrib() {
-  const el = document.getElementById('contrib-strip');
-  if (contrib.length === 0) {
-    el.innerHTML = '<p style="color:var(--texto-claro);font-size:13px;">Seja a primeira a dar um mimo! 🐾</p>';
-    return;
-  }
-  el.innerHTML = contrib.map(n => `
-    <div class="contrib-chip"><span class="av">${initials(n)}</span>${n}</div>`).join('');
-}
-
 /* ====== MURAL ====== */
-function renderRecados() {
-  const el = document.getElementById('recados-list');
-  if (recados.length === 0) {
-    el.innerHTML = `<p style="text-align:center;color:var(--texto-claro);grid-column:1/-1;padding:20px;">Seja a primeira a deixar um carinho 💕</p>`;
-    return;
-  }
-  el.innerHTML = recados.map(r => `
-    <div class="recado">
-      <span class="rheart">♥</span>
-      <div class="rtop"><span class="rav">${initials(r.nome)}</span><span class="rwho">${r.nome}</span></div>
-      <div class="rmsg">${r.mensagem}</div>
-    </div>`).join('');
-}
 async function addRecado() {
   const nome = document.getElementById('mural-nome').value.trim();
   const msg = document.getElementById('mural-msg').value.trim();
