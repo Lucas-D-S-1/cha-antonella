@@ -296,10 +296,10 @@ test('T9 — home não contém mural nem contrib-strip', async ({ page }) => {
 // ──────────────────────────────────────────────────────────────────────────────
 // T10 — Hero mostra "03/07"
 // ──────────────────────────────────────────────────────────────────────────────
-test('T10 — hero mostra "03/07"', async ({ page }) => {
+test('T10 — hero mostra "08/07"', async ({ page }) => {
   await loadPage(page);
   const heroText = await page.locator('.hero').innerText();
-  expect(heroText).toContain('03/07');
+  expect(heroText).toContain('08/07');
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
@@ -341,4 +341,124 @@ test('T12 — finalizar com carrinho vazio não avança', async ({ page }) => {
 
   // Toast deve aparecer
   await expect(page.locator('#toast')).toHaveClass(/show/);
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// T13 — #mamae exige login (sem sessão, RPC não é chamada)
+// ──────────────────────────────────────────────────────────────────────────────
+test('T13 — #mamae exige login sem sessão ativa', async ({ page }) => {
+  let rpcCalled = false;
+  await page.route('**/rest/v1/rpc/mamae_dashboard**', route => {
+    rpcCalled = true;
+    route.fulfill({ status: 403, contentType: 'application/json', body: '{"message":"Unauthorized"}' });
+  });
+
+  await mockSupabase(page); // sessão null por padrão
+
+  await page.goto(FILE + '#mamae', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => {
+    const l = document.getElementById('loading');
+    return l && l.classList.contains('gone');
+  }, { timeout: 8000 });
+
+  // Tela mamae deve estar ativa
+  await expect(page.locator('#screen-mamae')).toHaveClass(/active/);
+
+  // Login deve estar visível
+  await expect(page.locator('#mamae-locked')).toBeVisible();
+
+  // Painel deve estar oculto
+  const panelHidden = await page.locator('#mamae-panel').evaluate(el => el.style.display === 'none');
+  expect(panelHidden).toBe(true);
+
+  // RPC NÃO deve ter sido chamada
+  expect(rpcCalled).toBe(false);
+});
+
+// ──────────────────────────────────────────────────────────────────────────────
+// T14 — #mamae dashboard renderiza com mock autenticado
+// ──────────────────────────────────────────────────────────────────────────────
+test('T14 — #mamae dashboard renderiza corretamente com mock', async ({ page }) => {
+  const MOCK_DASHBOARD = {
+    total_arrecadado: 2600,
+    pessoas: 25,
+    itens: [
+      { nome: 'Body',     eh_cota: false, quantidade: 4  },
+      { nome: 'Carrinho', eh_cota: true,  quantidade: 16 },
+    ],
+    recados: [
+      { nome: 'Maria Silva', mensagem: 'Parabéns! 💕',    criado_em: new Date().toISOString() },
+      { nome: 'João Costa',  mensagem: 'Muitas bênçãos!', criado_em: new Date().toISOString() },
+    ],
+  };
+
+  const FAKE_USER = {
+    id: 'fake-uuid', aud: 'authenticated', role: 'authenticated',
+    email: 'julia@test.com', confirmed_at: new Date().toISOString(),
+  };
+  const FAKE_SESSION = {
+    access_token: 'fake-access-token',
+    token_type: 'bearer',
+    expires_in: 3600,
+    expires_at: Math.floor(Date.now() / 1000) + 3600,
+    refresh_token: 'fake-refresh-token',
+    user: FAKE_USER,
+  };
+
+  // Injeta sessão no localStorage antes da página carregar
+  await page.addInitScript((session) => {
+    localStorage.setItem('sb-ksugktnkrppqjlmarfst-auth-token', JSON.stringify(session));
+  }, FAKE_SESSION);
+
+  await mockSupabase(page);
+
+  // Sobrescreve auth para retornar sessão válida (registrado depois = tem prioridade)
+  await page.route('**/auth/v1/**', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ user: FAKE_USER }) })
+  );
+
+  // Mock da RPC
+  await page.route('**/rest/v1/rpc/mamae_dashboard**', route =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_DASHBOARD) })
+  );
+
+  await page.goto(FILE + '#mamae', { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => {
+    const l = document.getElementById('loading');
+    return l && l.classList.contains('gone');
+  }, { timeout: 8000 });
+
+  // Aguarda painel aparecer
+  await page.waitForFunction(() =>
+    document.getElementById('mamae-panel').style.display !== 'none'
+  , { timeout: 6000 });
+
+  // Aguarda contador animar até o valor final
+  await page.waitForFunction(() => {
+    const el = document.getElementById('mamae-total-val');
+    return el && el.textContent.includes('2.600');
+  }, { timeout: 4000 });
+
+  // Verifica total e pessoas
+  const statsText = await page.locator('#mamae-stats').innerText();
+  expect(statsText).toContain('2.600');
+  expect(statsText).toContain('25');
+
+  // Verifica itens
+  const itensText = await page.locator('#mamae-itens').innerText();
+  expect(itensText).toContain('Body');
+  expect(itensText).toContain('Carrinho');
+  expect(itensText).toContain('16');
+
+  // Verifica recados
+  const recadosText = await page.locator('#mamae-recados').innerText();
+  expect(recadosText).toContain('Maria Silva');
+  expect(recadosText).toContain('João Costa');
+
+  // Verifica que #mamae NÃO aparece como link/nav na home
+  await page.evaluate(() => navTo('lista'));
+  await expect(page.locator('#screen-lista')).toHaveClass(/active/);
+  const bodyHtml = await page.locator('body').innerHTML();
+  expect(bodyHtml).not.toContain('href="#mamae"');
+  expect(bodyHtml).not.toContain("navTo('mamae')");
 });

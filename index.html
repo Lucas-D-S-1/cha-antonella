@@ -290,6 +290,20 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
 .toast.social{background:var(--pink-escuro);}
 
 .confetti-piece{position:fixed;width:10px;height:10px;z-index:9000;pointer-events:none;border-radius:2px;}
+
+/* ===== MAMÃE ===== */
+.mamae-wrap{max-width:640px;margin:0 auto;}
+.mamae-header{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.mamae-header h2{font-family:var(--display);font-weight:700;font-size:24px;color:var(--pink);}
+.mamae-header .ico{font-size:22px;}
+.mamae-sub{font-size:13px;color:var(--texto-claro);margin-bottom:20px;}
+.mamae-stats-wrap{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:6px;}
+.mamae-big-stat{background:var(--branco);border-radius:22px;padding:22px 14px;text-align:center;box-shadow:0 6px 20px var(--sombra);border:1.5px solid var(--rosa-nuvem);}
+.mamae-big-stat .num{font-family:var(--display);font-weight:800;font-size:28px;color:var(--pink);line-height:1;}
+.mamae-big-stat .lbl{font-size:11px;font-weight:700;color:var(--texto-claro);margin-top:6px;text-transform:uppercase;letter-spacing:0.04em;}
+.mamae-items-wrap{display:flex;flex-wrap:wrap;gap:9px;justify-content:center;max-width:720px;margin:0 auto 8px;}
+.mamae-item-chip{background:var(--branco);border:1.5px solid var(--rosa-nuvem);border-radius:999px;padding:8px 18px;font-size:13.5px;font-weight:700;color:var(--texto);box-shadow:0 3px 8px var(--sombra);}
+.mamae-footer{text-align:center;padding:30px 0 10px;font-family:var(--script);font-size:20px;color:var(--pink-escuro);opacity:0.85;}
 </style>
 </head>
 <body>
@@ -447,6 +461,37 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
     <h2>Ops!</h2>
     <p>Esse caminho ainda não nasceu 🐻<br>Vamos voltar pra lista da Antonella?</p>
     <button class="btn-primary" style="max-width:280px;margin:0 auto" onclick="navTo('lista')">🐾 Voltar pra lista</button>
+  </div>
+</div>
+
+<!-- ============ MAMÃE ============ -->
+<div class="screen" id="screen-mamae">
+  <div id="mamae-locked">
+    <div class="admin-lock">
+      <div class="lock-bear">🤱🐻</div>
+      <h2>Área da mamãe</h2>
+      <p>Um cantinho especial pra acompanhar o carinho chegando.</p>
+      <div class="field"><input type="email" id="mamae-email" placeholder="Seu e-mail" autocomplete="email"></div>
+      <div class="field"><input type="password" id="mamae-pass" placeholder="Senha" onkeydown="if(event.key==='Enter')tryMamae()"></div>
+      <button class="btn-primary" onclick="tryMamae()">Entrar 🌸</button>
+    </div>
+  </div>
+
+  <div id="mamae-panel" style="display:none;">
+    <div class="mamae-wrap reading">
+      <div class="mamae-header">
+        <span class="ico">🤱</span>
+        <h2>Carinho da Antonella</h2>
+        <button class="btn-logout" onclick="mamaeLogout()">Sair</button>
+      </div>
+      <p class="mamae-sub">Tudo o que chegou de amor pra nossa Antonella 🐾</p>
+      <div id="mamae-stats"></div>
+      <div class="sec-divider" style="margin-top:28px;"><span class="paw">🎁</span><h2>O que a Antonella ganhou</h2></div>
+      <div id="mamae-itens"></div>
+      <div class="sec-divider"><span class="paw">💌</span><h2>Recados de carinho</h2></div>
+      <div id="mamae-recados"></div>
+      <div class="mamae-footer">feito com amor pra você e pra Antonella 🎀</div>
+    </div>
   </div>
 </div>
 
@@ -1013,8 +1058,8 @@ function adminTab(name, btn) {
 }
 
 /* ====== ROUTING (nativo: pushState + popstate) ====== */
-const VALID_SCREENS = ['lista', 'carrinho', 'pix', 'obrigado', 'admin', 'e404'];
-const HASH_MAP = { lista: '', carrinho: 'carrinho', pix: 'pix', obrigado: 'obrigado', admin: 'admin', e404: 'e404' };
+const VALID_SCREENS = ['lista', 'carrinho', 'pix', 'obrigado', 'admin', 'mamae', 'e404'];
+const HASH_MAP = { lista: '', carrinho: 'carrinho', pix: 'pix', obrigado: 'obrigado', admin: 'admin', mamae: 'mamae', e404: 'e404' };
 
 // Render puro de uma tela (sem mexer no histórico)
 function showScreen(name, scroll = 1) {
@@ -1040,6 +1085,10 @@ window.addEventListener('popstate', async (e) => {
     const { data: { session } } = await sb.auth.getSession();
     if (session) { showAdminPanel(); await loadAdminData(); }
   }
+  if (name === 'mamae') {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) { await loadMamaeData(); startMamaePolling(); }
+  }
   showScreen(name, 0);
 });
 
@@ -1054,6 +1103,10 @@ async function handleRoute() {
   if (screen === 'admin') {
     const { data: { session } } = await sb.auth.getSession();
     if (session) { showAdminPanel(); await loadAdminData(); }
+  }
+  if (screen === 'mamae') {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) { await loadMamaeData(); startMamaePolling(); }
   }
   // substitui o estado inicial (não empilha) pra o primeiro "voltar" sair limpo
   history.replaceState({ screen }, '', location.hash || location.pathname + location.search);
@@ -1090,6 +1143,128 @@ function toast(msg) {
   const t = document.getElementById('toast');
   t.classList.remove('social'); t.textContent = msg; t.classList.add('show');
   clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1900);
+}
+
+/* ====== MAMÃE ====== */
+let mamaePrevTotal = 0;
+let mamaePollingTimer = null;
+
+function showMamaeLogin() {
+  document.getElementById('mamae-locked').style.display = 'block';
+  document.getElementById('mamae-panel').style.display = 'none';
+}
+function showMamaePanel() {
+  document.getElementById('mamae-locked').style.display = 'none';
+  document.getElementById('mamae-panel').style.display = 'block';
+}
+
+async function tryMamae() {
+  const email = document.getElementById('mamae-email').value.trim();
+  const pass  = document.getElementById('mamae-pass').value;
+  if (!email || !pass) { toast('Preencha e-mail e senha 🔒'); return; }
+  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
+  if (error) { toast('E-mail ou senha incorretos 🔒'); return; }
+  await loadMamaeData();
+  startMamaePolling();
+  if (document.getElementById('mamae-panel').style.display !== 'none') toast('Bem-vinda! 💕');
+}
+
+async function mamaeLogout() {
+  if (mamaePollingTimer) { clearInterval(mamaePollingTimer); mamaePollingTimer = null; }
+  await sb.auth.signOut();
+  showMamaeLogin();
+  mamaePrevTotal = 0;
+  document.getElementById('mamae-email').value = '';
+  document.getElementById('mamae-pass').value = '';
+}
+
+async function loadMamaeData() {
+  const { data, error } = await sb.rpc('mamae_dashboard');
+  if (error || !data) {
+    showMamaeLogin();
+    toast('Não consegui carregar os dados. Tente novamente 😢');
+    return;
+  }
+  showMamaePanel();
+  const total = parseFloat(data.total_arrecadado) || 0;
+  mamaePrevTotal = total;
+  renderMamaeDashboard(data);
+  const el = document.getElementById('mamae-total-val');
+  if (el) animateCounter(el, 0, total);
+  confettiBurst();
+}
+
+function renderMamaeDashboard(data) {
+  const total   = parseFloat(data.total_arrecadado) || 0;
+  const pessoas = data.pessoas || 0;
+  const itens   = data.itens   || [];
+  const recados = data.recados || [];
+
+  document.getElementById('mamae-stats').innerHTML = `
+    <div class="mamae-stats-wrap">
+      <div class="mamae-big-stat">
+        <div class="num" id="mamae-total-val">${fmt(total)}</div>
+        <div class="lbl">arrecadado 💕</div>
+      </div>
+      <div class="mamae-big-stat">
+        <div class="num">${pessoas}</div>
+        <div class="lbl">pessoas participaram</div>
+      </div>
+    </div>`;
+
+  document.getElementById('mamae-itens').innerHTML = itens.length
+    ? `<div class="mamae-items-wrap">${itens.map(it =>
+        it.eh_cota
+          ? `<div class="mamae-item-chip">${it.nome} · ${it.quantidade} cota${it.quantidade > 1 ? 's' : ''} 🐾</div>`
+          : `<div class="mamae-item-chip">${it.nome} ×${it.quantidade}</div>`
+      ).join('')}</div>`
+    : `<p style="text-align:center;color:var(--texto-claro);font-size:13px;padding:16px 0;">Ainda nenhum presente confirmado 🧸</p>`;
+
+  document.getElementById('mamae-recados').innerHTML = recados.length
+    ? recados.map(r => `
+        <div class="admin-recado">
+          <span class="arav">${initials(r.nome)}</span>
+          <div class="arinfo">
+            <div class="arwho">${r.nome}</div>
+            <div class="armsg">${r.mensagem}</div>
+          </div>
+        </div>`).join('')
+    : `<div class="cart-empty"><span class="big-emoji">💌</span><p>Os recados aparecerão aqui.</p></div>`;
+}
+
+function animateCounter(el, from, to, duration) {
+  duration = duration || 1500;
+  el.textContent = fmt(from);
+  const start = performance.now();
+  function tick(now) {
+    const t    = Math.min((now - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3);
+    el.textContent = fmt(from + (to - from) * ease);
+    if (t < 1) requestAnimationFrame(tick);
+    else el.textContent = fmt(to);
+  }
+  requestAnimationFrame(tick);
+}
+
+function startMamaePolling() {
+  if (mamaePollingTimer) clearInterval(mamaePollingTimer);
+  mamaePollingTimer = setInterval(silentRefreshMamae, 30000);
+}
+
+async function silentRefreshMamae() {
+  if (!document.getElementById('screen-mamae').classList.contains('active')) return;
+  const { data, error } = await sb.rpc('mamae_dashboard');
+  if (error || !data) return;
+  const newTotal  = parseFloat(data.total_arrecadado) || 0;
+  const prevTotal = mamaePrevTotal;
+  const increased = newTotal > prevTotal;
+  mamaePrevTotal  = newTotal;
+  renderMamaeDashboard(data);
+  if (increased) {
+    confettiBurst();
+    const el = document.getElementById('mamae-total-val');
+    if (el) animateCounter(el, prevTotal, newTotal);
+  }
 }
 
 window.addEventListener('load', init);
