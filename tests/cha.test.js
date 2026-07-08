@@ -344,16 +344,16 @@ test('T12 — finalizar com carrinho vazio não avança', async ({ page }) => {
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
-// T13 — #mamae exige login (sem sessão, RPC não é chamada)
+// T13 — #mamae sem token mostra tela de link inválido (RPC não é chamada)
 // ──────────────────────────────────────────────────────────────────────────────
-test('T13 — #mamae exige login sem sessão ativa', async ({ page }) => {
+test('T13 — #mamae sem token mostra link inválido e não chama RPC', async ({ page }) => {
   let rpcCalled = false;
-  await page.route('**/rest/v1/rpc/mamae_dashboard**', route => {
+  await page.route('**/rest/v1/rpc/mamae_dashboard_token**', route => {
     rpcCalled = true;
-    route.fulfill({ status: 403, contentType: 'application/json', body: '{"message":"Unauthorized"}' });
+    route.fulfill({ status: 200, contentType: 'application/json', body: 'null' });
   });
 
-  await mockSupabase(page); // sessão null por padrão
+  await mockSupabase(page);
 
   await page.goto(FILE + '#mamae', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => {
@@ -364,8 +364,8 @@ test('T13 — #mamae exige login sem sessão ativa', async ({ page }) => {
   // Tela mamae deve estar ativa
   await expect(page.locator('#screen-mamae')).toHaveClass(/active/);
 
-  // Login deve estar visível
-  await expect(page.locator('#mamae-locked')).toBeVisible();
+  // Tela de link inválido deve estar visível
+  await expect(page.locator('#mamae-invalid')).toBeVisible();
 
   // Painel deve estar oculto
   const panelHidden = await page.locator('#mamae-panel').evaluate(el => el.style.display === 'none');
@@ -376,9 +376,9 @@ test('T13 — #mamae exige login sem sessão ativa', async ({ page }) => {
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
-// T14 — #mamae dashboard renderiza com mock autenticado
+// T14 — #mamae com token mockado renderiza dashboard
 // ──────────────────────────────────────────────────────────────────────────────
-test('T14 — #mamae dashboard renderiza corretamente com mock', async ({ page }) => {
+test('T14 — #mamae com token renderiza dashboard corretamente', async ({ page }) => {
   const MOCK_DASHBOARD = {
     total_arrecadado: 2600,
     pessoas: 25,
@@ -392,37 +392,14 @@ test('T14 — #mamae dashboard renderiza corretamente com mock', async ({ page }
     ],
   };
 
-  const FAKE_USER = {
-    id: 'fake-uuid', aud: 'authenticated', role: 'authenticated',
-    email: 'julia@test.com', confirmed_at: new Date().toISOString(),
-  };
-  const FAKE_SESSION = {
-    access_token: 'fake-access-token',
-    token_type: 'bearer',
-    expires_in: 3600,
-    expires_at: Math.floor(Date.now() / 1000) + 3600,
-    refresh_token: 'fake-refresh-token',
-    user: FAKE_USER,
-  };
-
-  // Injeta sessão no localStorage antes da página carregar
-  await page.addInitScript((session) => {
-    localStorage.setItem('sb-ksugktnkrppqjlmarfst-auth-token', JSON.stringify(session));
-  }, FAKE_SESSION);
-
   await mockSupabase(page);
 
-  // Sobrescreve auth para retornar sessão válida (registrado depois = tem prioridade)
-  await page.route('**/auth/v1/**', route =>
-    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ user: FAKE_USER }) })
-  );
-
-  // Mock da RPC
-  await page.route('**/rest/v1/rpc/mamae_dashboard**', route =>
+  // Mock da RPC (não valida o token de verdade)
+  await page.route('**/rest/v1/rpc/mamae_dashboard_token**', route =>
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(MOCK_DASHBOARD) })
   );
 
-  await page.goto(FILE + '#mamae', { waitUntil: 'domcontentloaded' });
+  await page.goto(FILE + '#mamae?t=token-de-teste', { waitUntil: 'domcontentloaded' });
   await page.waitForFunction(() => {
     const l = document.getElementById('loading');
     return l && l.classList.contains('gone');

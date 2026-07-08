@@ -466,14 +466,11 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
 
 <!-- ============ MAMÃE ============ -->
 <div class="screen" id="screen-mamae">
-  <div id="mamae-locked">
-    <div class="admin-lock">
-      <div class="lock-bear">🤱🐻</div>
-      <h2>Área da mamãe</h2>
-      <p>Um cantinho especial pra acompanhar o carinho chegando.</p>
-      <div class="field"><input type="email" id="mamae-email" placeholder="Seu e-mail" autocomplete="email"></div>
-      <div class="field"><input type="password" id="mamae-pass" placeholder="Senha" onkeydown="if(event.key==='Enter')tryMamae()"></div>
-      <button class="btn-primary" onclick="tryMamae()">Entrar 🌸</button>
+  <div id="mamae-invalid">
+    <div class="screen-404" style="padding-top:80px;">
+      <div class="e404-bear">🐻💔</div>
+      <h2>Link inválido</h2>
+      <p>Esse link não é válido.<br>Peça o link certo pra Julia 🐾</p>
     </div>
   </div>
 
@@ -482,7 +479,6 @@ footer .secret{cursor:pointer;font-size:11px;opacity:0.7;text-decoration:underli
       <div class="mamae-header">
         <span class="ico">🤱</span>
         <h2>Carinho da Antonella</h2>
-        <button class="btn-logout" onclick="mamaeLogout()">Sair</button>
       </div>
       <p class="mamae-sub">Tudo o que chegou de amor pra nossa Antonella 🐾</p>
       <div id="mamae-stats"></div>
@@ -1086,15 +1082,16 @@ window.addEventListener('popstate', async (e) => {
     if (session) { showAdminPanel(); await loadAdminData(); }
   }
   if (name === 'mamae') {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) { await loadMamaeData(); startMamaePolling(); }
+    const token = getMamaeToken();
+    if (token) { await loadMamaeData(token); startMamaePolling(token); }
   }
   showScreen(name, 0);
 });
 
 function screenFromHash() {
-  const hash = location.hash.replace('#', '') || 'lista';
-  return VALID_SCREENS.includes(hash) ? hash : 'e404';
+  const hash   = location.hash.replace('#', '') || 'lista';
+  const screen = hash.split('?')[0]; // ignora ?t=... ou qualquer query no hash
+  return VALID_SCREENS.includes(screen) ? screen : 'e404';
 }
 
 // Primeira carga: resolve a tela inicial a partir da URL
@@ -1105,8 +1102,8 @@ async function handleRoute() {
     if (session) { showAdminPanel(); await loadAdminData(); }
   }
   if (screen === 'mamae') {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) { await loadMamaeData(); startMamaePolling(); }
+    const token = getMamaeToken();
+    if (token) { await loadMamaeData(token); startMamaePolling(token); }
   }
   // substitui o estado inicial (não empilha) pra o primeiro "voltar" sair limpo
   history.replaceState({ screen }, '', location.hash || location.pathname + location.search);
@@ -1146,45 +1143,29 @@ function toast(msg) {
 }
 
 /* ====== MAMÃE ====== */
-let mamaePrevTotal = 0;
+let mamaePrevTotal    = 0;
 let mamaePollingTimer = null;
+let mamaeCurrentToken = null;
 
-function showMamaeLogin() {
-  document.getElementById('mamae-locked').style.display = 'block';
+function getMamaeToken() {
+  const hash = location.hash.replace('#', '');
+  const [screen, query] = hash.split('?');
+  if (screen !== 'mamae' || !query) return null;
+  return new URLSearchParams(query).get('t');
+}
+function showMamaeInvalid() {
+  document.getElementById('mamae-invalid').style.display = 'block';
   document.getElementById('mamae-panel').style.display = 'none';
 }
 function showMamaePanel() {
-  document.getElementById('mamae-locked').style.display = 'none';
+  document.getElementById('mamae-invalid').style.display = 'none';
   document.getElementById('mamae-panel').style.display = 'block';
 }
 
-async function tryMamae() {
-  const email = document.getElementById('mamae-email').value.trim();
-  const pass  = document.getElementById('mamae-pass').value;
-  if (!email || !pass) { toast('Preencha e-mail e senha 🔒'); return; }
-  const { error } = await sb.auth.signInWithPassword({ email, password: pass });
-  if (error) { toast('E-mail ou senha incorretos 🔒'); return; }
-  await loadMamaeData();
-  startMamaePolling();
-  if (document.getElementById('mamae-panel').style.display !== 'none') toast('Bem-vinda! 💕');
-}
-
-async function mamaeLogout() {
-  if (mamaePollingTimer) { clearInterval(mamaePollingTimer); mamaePollingTimer = null; }
-  await sb.auth.signOut();
-  showMamaeLogin();
-  mamaePrevTotal = 0;
-  document.getElementById('mamae-email').value = '';
-  document.getElementById('mamae-pass').value = '';
-}
-
-async function loadMamaeData() {
-  const { data, error } = await sb.rpc('mamae_dashboard');
-  if (error || !data) {
-    showMamaeLogin();
-    toast('Não consegui carregar os dados. Tente novamente 😢');
-    return;
-  }
+async function loadMamaeData(token) {
+  mamaeCurrentToken = token;
+  const { data, error } = await sb.rpc('mamae_dashboard_token', { p_token: token });
+  if (error || !data) { showMamaeInvalid(); return; }
   showMamaePanel();
   const total = parseFloat(data.total_arrecadado) || 0;
   mamaePrevTotal = total;
@@ -1246,14 +1227,16 @@ function animateCounter(el, from, to, duration) {
   requestAnimationFrame(tick);
 }
 
-function startMamaePolling() {
+function startMamaePolling(token) {
+  mamaeCurrentToken = token;
   if (mamaePollingTimer) clearInterval(mamaePollingTimer);
   mamaePollingTimer = setInterval(silentRefreshMamae, 30000);
 }
 
 async function silentRefreshMamae() {
   if (!document.getElementById('screen-mamae').classList.contains('active')) return;
-  const { data, error } = await sb.rpc('mamae_dashboard');
+  if (!mamaeCurrentToken) return;
+  const { data, error } = await sb.rpc('mamae_dashboard_token', { p_token: mamaeCurrentToken });
   if (error || !data) return;
   const newTotal  = parseFloat(data.total_arrecadado) || 0;
   const prevTotal = mamaePrevTotal;
